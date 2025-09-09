@@ -5,11 +5,11 @@
 <title>Maximum Circles in a Rectangle</title>
 <style>
   body { font-family: Arial, sans-serif; margin: 20px; }
-  label { display: inline-block; width: 150px; }
-  input { width: 80px; }
+  label { display: inline-block; width: 120px; }
+  input { width: 80px; margin-bottom: 5px; }
   button { margin-top: 10px; padding: 5px 10px; }
   #result { margin-top: 15px; font-weight: bold; }
-  canvas { border: 1px solid black; margin-top: 20px; }
+  canvas { border: 1px solid black; margin-top: 20px; width: 100%; height: auto; display: block; }
 </style>
 </head>
 <body>
@@ -26,7 +26,7 @@
 <button onclick="calculateCircles()">Calculate</button>
 
 <div id="result"></div>
-<canvas id="canvas" width="600" height="400"></canvas>
+<canvas id="canvas"></canvas>
 
 <script>
 function calculateCircles() {
@@ -40,7 +40,7 @@ function calculateCircles() {
     let y = r;
     let row = 0;
 
-    // Main hexagonal arrangement
+    // Hexagonal arrangement
     while (y + r <= height) {
         let xStart = r + (row % 2) * r;
         let x = xStart;
@@ -52,7 +52,7 @@ function calculateCircles() {
         row++;
     }
 
-    // Extra rows at the bottom
+    // Extra rows at bottom
     let extraY = y;
     while (extraY + r <= height) {
         row++;
@@ -61,9 +61,7 @@ function calculateCircles() {
         while (x + r <= width) {
             let overlap = false;
             for (let c of circles) {
-                let dx = c.x - x;
-                let dy = c.y - extraY;
-                if (Math.hypot(dx, dy) < diameter - 1e-6) {
+                if (Math.hypot(c.x - x, c.y - extraY) < diameter - 1e-6) {
                     overlap = true;
                     break;
                 }
@@ -76,15 +74,17 @@ function calculateCircles() {
 
     document.getElementById("result").innerText = "Maximum circles: " + circles.length;
 
-    // --- Draw on canvas ---
+    // --- Draw responsive canvas ---
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
-    ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // Scale to fit canvas
-    const scaleX = canvas.width / width;
-    const scaleY = canvas.height / height;
-    const scale = Math.min(scaleX, scaleY);
+    // Set canvas width to parent width and height proportional
+    const parentWidth = canvas.clientWidth;
+    const scale = parentWidth / width;
+    canvas.width = parentWidth;
+    canvas.height = height * scale;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw rectangle
     ctx.strokeStyle = "black";
@@ -98,6 +98,9 @@ function calculateCircles() {
         ctx.stroke();
     }
 }
+
+// Optional: recalculate when window resizes
+window.addEventListener('resize', calculateCircles);
 </script>
 
 </body>
