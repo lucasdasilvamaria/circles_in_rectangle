@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Maximum Circles in a Rectangle</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  label { display: inline-block; width: 150px; }
+  input { width: 80px; }
+  button { margin-top: 10px; padding: 5px 10px; }
+  #result { margin-top: 15px; font-weight: bold; }
+  canvas { border: 1px solid black; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<h1>Maximum Circles in a Rectangle</h1>
+
+<label>Width (cm):</label>
+<input type="number" id="width" value="92"><br>
+<label>Height (cm):</label>
+<input type="number" id="height" value="65"><br>
+<label>Diameter (cm):</label>
+<input type="number" id="diameter" value="17"><br>
+
+<button onclick="calculateCircles()">Calculate</button>
+
+<div id="result"></div>
+<canvas id="canvas" width="600" height="400"></canvas>
+
+<script>
+function calculateCircles() {
+    const width = parseFloat(document.getElementById("width").value);
+    const height = parseFloat(document.getElementById("height").value);
+    const diameter = parseFloat(document.getElementById("diameter").value);
+    const r = diameter / 2;
+    const stepY = Math.sqrt(3)/2 * diameter;
+
+    let circles = [];
+    let y = r;
+    let row = 0;
+
+    // Main hexagonal arrangement
+    while (y + r <= height) {
+        let xStart = r + (row % 2) * r;
+        let x = xStart;
+        while (x + r <= width) {
+            circles.push({x: x, y: y});
+            x += diameter;
+        }
+        y += stepY;
+        row++;
+    }
+
+    // Extra rows at the bottom
+    let extraY = y;
+    while (extraY + r <= height) {
+        row++;
+        let xStart = r + (row % 2) * r;
+        let x = xStart;
+        while (x + r <= width) {
+            let overlap = false;
+            for (let c of circles) {
+                let dx = c.x - x;
+                let dy = c.y - extraY;
+                if (Math.hypot(dx, dy) < diameter - 1e-6) {
+                    overlap = true;
+                    break;
+                }
+            }
+            if (!overlap) circles.push({x: x, y: extraY});
+            x += diameter;
+        }
+        extraY += stepY;
+    }
+
+    document.getElementById("result").innerText = "Maximum circles: " + circles.length;
+
+    // --- Draw on canvas ---
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // Scale to fit canvas
+    const scaleX = canvas.width / width;
+    const scaleY = canvas.height / height;
+    const scale = Math.min(scaleX, scaleY);
+
+    // Draw rectangle
+    ctx.strokeStyle = "black";
+    ctx.strokeRect(0, 0, width*scale, height*scale);
+
+    // Draw circles
+    ctx.strokeStyle = "blue";
+    for (let c of circles) {
+        ctx.beginPath();
+        ctx.arc(c.x*scale, c.y*scale, r*scale, 0, 2*Math.PI);
+        ctx.stroke();
+    }
+}
+</script>
+
+</body>
+</html>
